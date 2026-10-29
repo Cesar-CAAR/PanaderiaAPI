@@ -20,7 +20,6 @@ namespace PanaderiaAPI.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Producto>>> GetProductos()
         {
-            // El .Include garantiza que al pedir los panes, también traiga sus ingredientes
             return await _context.Productos
                                  .Include(p => p.Ingredientes)
                                  .ToListAsync();
@@ -50,6 +49,58 @@ namespace PanaderiaAPI.Controllers
             await _context.SaveChangesAsync();
 
             return CreatedAtAction(nameof(GetProducto), new { id = producto.Id }, producto);
+        }
+
+        // PUT: api/productos/5 (NUEVO - Para actualizar)
+        [HttpPut("{id}")]
+        public async Task<IActionResult> PutProducto(int id, Producto producto)
+        {
+            if (id != producto.Id)
+            {
+                return BadRequest("El ID de la ruta no coincide con el ID del producto.");
+            }
+
+            _context.Entry(producto).State = EntityState.Modified;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!ProductoExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw; // Si hay otro error, lo lanza
+                }
+            }
+
+            return NoContent(); // Retorna 204 Sin Contenido si fue exitoso
+        }
+
+        // DELETE: api/productos/5 (NUEVO - Para eliminar)
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteProducto(int id)
+        {
+            var producto = await _context.Productos.FindAsync(id);
+            if (producto == null)
+            {
+                return NotFound();
+            }
+
+            _context.Productos.Remove(producto);
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
+
+        // Función auxiliar para validar la existencia en el PUT
+        private bool ProductoExists(int id)
+        {
+            return _context.Productos.Any(e => e.Id == id);
         }
     }
 }
