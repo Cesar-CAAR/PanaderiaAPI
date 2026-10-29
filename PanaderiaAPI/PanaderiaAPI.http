@@ -1,0 +1,6 @@
+@PanaderiaAPI_HostAddress = http://localhost:5269
+
+GET {{PanaderiaAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
